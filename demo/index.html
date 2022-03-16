@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="{{ site.description }}">
+	<title>Polkadot keyless vanity address generator</title>
+	<style>
+	html,body { all: initial; height: 100%; }
+	body { display: flex; }
+	form {
+		margin: auto; width: 90%; max-width: 500px;
+		display: flex; flex-direction: column;
+	}
+	input,button,output { height: 2.5rem; padding: 0 1rem; margin: 0.5rem 0; }
+	output { line-height: 2.5rem; text-align: center; color: gray; }
+	</style>
+</head>
+
+<body>
+	<form name="vanity">
+		<input name="pattern" type="text" placeholder="Vanity text" required>
+		<button>Generate</button>
+		<output name="address"></output>
+	</form>
+</body>
+
+<script type="module">
+document.vanity.onsubmit = e => {
+	e.preventDefault()
+	e.target.address.value = e.target.pattern.value
+}
+</script>
+</html>
