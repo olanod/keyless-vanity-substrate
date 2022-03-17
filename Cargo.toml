@@ -3,7 +3,13 @@ name = "keyless-vanity-substrate"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 base58 = "0.2.0"
 blake2-rfc = { version = "0.2.18", default-features = false }
-# wasm-bindgen = { version = "0.2.79", optional = true }
+wasm-bindgen = { version = "0.2.79", optional = true }
+
+[features]
+web = ["wasm-bindgen"]

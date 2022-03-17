@@ -1,0 +1,7 @@
+WASM=target/wasm32-unknown-unknown/release/keyless_vanity_substrate.wasm
+
+demo/vanity.js: $(WASM)
+	wasm-bindgen --target web --out-dir demo --no-typescript --out-name $(basename $(@F)) $^
+
+$(WASM): src/lib.rs
+	cargo build --release --target wasm32-unknown-unknown --features web

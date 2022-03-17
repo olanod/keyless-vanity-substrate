@@ -10,25 +10,42 @@
 	body { display: flex; }
 	form {
 		margin: auto; width: 90%; max-width: 500px;
-		display: flex; flex-direction: column;
+		display: grid; grid-template-columns: repeat(8, 1fr); row-gap: 1rem; column-gap: 0.5rem;
 	}
-	input,button,output { height: 2.5rem; padding: 0 1rem; margin: 0.5rem 0; }
-	output { line-height: 2.5rem; text-align: center; color: gray; }
+	input,button,output { height: 2.5rem; }
+	input { padding: 0 1rem; box-sizing: border-box; }
+	button,output { grid-column: 1 / -1; }
+	input[name=pattern] { grid-column: 1 / -2; }
+	input[name=char] { text-align: center; }
+	output {
+		display: block; background: whitesmoke;
+		line-height: 2.5rem; text-align: center; color: gray; font-family: monospace;
+		overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+	}
+	output[name=address]:before { content: '⬤  '; color: #E6007A; }
+	output[name=key]:before { content: '🔑  '; }
 	</style>
 </head>
 
 <body>
 	<form name="vanity">
-		<input name="pattern" type="text" placeholder="Vanity text" required>
+		<input name="pattern" type="text" placeholder="Vanity text" required size="20" maxlength="20">
+		<input title="Fill character" name="char" type="text" placeholder="1" size="1" maxlength="1">
 		<button>Generate</button>
-		<output name="address"></output>
+		<output title="Polkadot address" name="address">~</output>
+		<output title="Public Key" name="key">~</output>
 	</form>
 </body>
 
 <script type="module">
-document.vanity.onsubmit = e => {
+import init, { vanity } from './vanity.js'
+init().then(() => console.log('wasm ready'))
+
+const form = document.vanity
+form.onsubmit = e => {
 	e.preventDefault()
-	e.target.address.value = e.target.pattern.value
+	const addr = vanity(form.pattern.value, form.char.value || '1')
+	form.address.value = addr || 'check your input!'
 }
 </script>
 </html>

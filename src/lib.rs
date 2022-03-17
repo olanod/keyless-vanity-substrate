@@ -1,8 +1,7 @@
-//#![no_std]
-
 use base58::*;
 use core::iter::repeat;
 
+#[cfg_attr(feature = "web", wasm_bindgen::prelude::wasm_bindgen)]
 pub fn vanity(input: &str, fill_c: char) -> Option<String> {
     let mut chars = input.chars().map(replace_invalid);
     let s = repeat(fill_c).take(46).map(|c| chars.next().unwrap_or(c));
@@ -14,7 +13,6 @@ pub fn vanity(input: &str, fill_c: char) -> Option<String> {
         let h = ss58hash(&bytes[1..len - 2]);
         h.as_bytes()[..2].try_into().unwrap()
     };
-    // println!("{} -> {:?}", bytes.len(), bytes);
     bytes[len - 2] = h1;
     bytes[len - 1] = h2;
     Some(bytes[1..].to_base58())
