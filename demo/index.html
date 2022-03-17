@@ -9,7 +9,7 @@
 	html,body { all: initial; height: 100%; }
 	body { display: flex; }
 	form {
-		margin: auto; width: 90%; max-width: 500px;
+		margin: auto; width: 90%; max-width: 600px;
 		display: grid; grid-template-columns: repeat(8, 1fr); row-gap: 1rem; column-gap: 0.5rem;
 	}
 	input,button,output { height: 2.5rem; }
@@ -18,7 +18,7 @@
 	input[name=pattern] { grid-column: 1 / -2; }
 	input[name=char] { text-align: center; }
 	output {
-		display: block; background: whitesmoke;
+		display: block; background: whitesmoke; padding: 0 0.5rem; border-radius: 3px;
 		line-height: 2.5rem; text-align: center; color: gray; font-family: monospace;
 		overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 	}
@@ -39,13 +39,16 @@
 
 <script type="module">
 import init, { vanity } from './vanity.js'
-init().then(() => console.log('wasm ready'))
+init().then(() => console.info('wasm ready'))
 
 const form = document.vanity
 form.onsubmit = e => {
 	e.preventDefault()
 	const addr = vanity(form.pattern.value, form.char.value || '1')
-	form.address.value = addr || 'check your input!'
+	form.address.value = addr?.encode() || 'check your input!'
+	const hexStr = (bytes = []) => 
+		'0x' + [...bytes].map(n => Number(n).toString(16).padStart(2, '0')).join('')
+	form.key.value = hexStr(addr?.key())
 }
 </script>
 </html>

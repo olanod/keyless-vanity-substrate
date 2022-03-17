@@ -1,21 +1,56 @@
 use base58::*;
-use core::iter::repeat;
+use core::iter::{self, repeat};
+#[cfg(feature = "web")]
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[cfg_attr(feature = "web", wasm_bindgen::prelude::wasm_bindgen)]
-pub fn vanity(input: &str, fill_c: char) -> Option<String> {
-    let mut chars = input.chars().map(replace_invalid);
-    let s = repeat(fill_c).take(46).map(|c| chars.next().unwrap_or(c));
-    let s: String = ['1', '1'].into_iter().chain(s).collect();
+#[cfg_attr(feature = "web", wasm_bindgen)]
+pub struct Address {
+    prefix: u8,
+    pub_key: [u8; 32],
+    sum: [u8; 2],
+}
 
-    let mut bytes = s.as_str().from_base58().ok()?;
-    let len = bytes.len();
-    let [h1, h2]: [u8; 2] = {
-        let h = ss58hash(&bytes[1..len - 2]);
-        h.as_bytes()[..2].try_into().unwrap()
-    };
-    bytes[len - 2] = h1;
-    bytes[len - 1] = h2;
-    Some(bytes[1..].to_base58())
+#[cfg_attr(feature = "web", wasm_bindgen)]
+impl Address {
+    pub fn encode(&self) -> String {
+        self.decoded().to_base58()
+    }
+
+    pub fn key(&self) -> Vec<u8> {
+        self.pub_key.into()
+    }
+
+    fn decoded(&self) -> Vec<u8> {
+        [&[self.prefix], self.pub_key.as_slice(), self.sum.as_slice()].concat()
+    }
+}
+
+impl core::fmt::Display for Address {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.encode())
+    }
+}
+
+/// The vanity function generates a Polkadot address that contains the provided text filled with a
+/// character of choice and the correct checksum to make it a valid address
+#[cfg_attr(feature = "web", wasm_bindgen)]
+pub fn vanity(input: &str, fill_c: char) -> Option<Address> {
+    // TODO: how to support other prefixes?
+    const POLKADOT: char = '1';
+    let mut input = input.chars().map(replace_invalid);
+    let addr = repeat(fill_c).take(46).map(|c| input.next().unwrap_or(c));
+    let addr: String = iter::once(POLKADOT).chain(addr).collect();
+
+    let decoded = addr.as_str().from_base58().ok()?;
+    let decoded = &decoded[..decoded.len() - 2];
+    Some(Address {
+        prefix: decoded[0],
+        pub_key: decoded[1..].try_into().expect("key fits"),
+        sum: {
+            let h = ss58hash(&decoded);
+            h.as_bytes()[..2].try_into().expect("bigger than 2 bytes")
+        },
+    })
 }
 
 const fn replace_invalid(c: char) -> char {
@@ -42,6 +77,9 @@ mod tests {
     #[test]
     fn vanity_address() {
         let address = vanity("HelloWorld", '1').expect("valid address");
-        assert_eq!(address, "1HeLLoWorLd1111111111111111111111111111111112kn");
+        assert_eq!(
+            address.encode(),
+            "1HeLLoWorLd1111111111111111111111111111111112kn"
+        );
     }
 }
