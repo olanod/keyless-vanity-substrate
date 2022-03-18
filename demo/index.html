@@ -12,9 +12,9 @@
 		margin: auto; width: 90%; max-width: 600px;
 		display: grid; grid-template-columns: repeat(8, 1fr); row-gap: 1rem; column-gap: 0.5rem;
 	}
-	input,button,output { height: 2.5rem; }
+	input,output { height: 2.5rem; }
 	input { padding: 0 1rem; box-sizing: border-box; }
-	button,output { grid-column: 1 / -1; }
+	output { grid-column: 1 / -1; }
 	input[name=pattern] { grid-column: 1 / -2; }
 	input[name=char] { text-align: center; }
 	output {
@@ -29,26 +29,24 @@
 
 <body>
 	<form name="vanity">
-		<input name="pattern" type="text" placeholder="Vanity text" required size="20" maxlength="20">
-		<input title="Fill character" name="char" type="text" placeholder="1" size="1" maxlength="1">
-		<button>Generate</button>
+		<input name="pattern" type="text" placeholder="Vanity text" required size="20" maxlength="20" autocomplete="off">
+		<input title="Fill character" name="char" type="text" placeholder="1" size="1" maxlength="1" autocomplete="off">
 		<output title="Polkadot address" name="address">~</output>
 		<output title="Public Key" name="key">~</output>
 	</form>
 </body>
 
 <script type="module">
-import init, { vanity } from './vanity.js'
+import init, { Address } from './vanity.js'
 init().then(() => console.info('wasm ready'))
 
 const form = document.vanity
-form.onsubmit = e => {
-	e.preventDefault()
-	const addr = vanity(form.pattern.value, form.char.value || '1')
+addEventListener('input', () => {
+	const addr = Address.withVanity(form.pattern.value, form.char.value)
 	form.address.value = addr?.encode() || 'check your input!'
 	const hexStr = (bytes = []) => 
 		'0x' + [...bytes].map(n => Number(n).toString(16).padStart(2, '0')).join('')
 	form.key.value = hexStr(addr?.key())
-}
+})
 </script>
 </html>

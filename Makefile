@@ -1,4 +1,4 @@
-WASM=target/wasm32-unknown-unknown/release/keyless_vanity_substrate.wasm
+WASM=target/wasm32-unknown-unknown/release/keyless_vanity.wasm
 
 demo/vanity.js: $(WASM)
 	wasm-bindgen --target web --out-dir demo --no-typescript --remove-name-section --out-name $(basename $(@F)) $^

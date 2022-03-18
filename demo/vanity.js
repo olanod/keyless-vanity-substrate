@@ -17,18 +17,6 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
-let cachegetInt32Memory0 = null;
-function getInt32Memory0() {
-    if (cachegetInt32Memory0 === null || cachegetInt32Memory0.buffer !== wasm.memory.buffer) {
-        cachegetInt32Memory0 = new Int32Array(wasm.memory.buffer);
-    }
-    return cachegetInt32Memory0;
-}
-
-function getArrayU8FromWasm0(ptr, len) {
-    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
-}
-
 let WASM_VECTOR_LEN = 0;
 
 let cachedTextEncoder = new TextEncoder('utf-8');
@@ -83,20 +71,18 @@ function passStringToWasm0(arg, malloc, realloc) {
     WASM_VECTOR_LEN = offset;
     return ptr;
 }
-/**
-* The vanity function generates a Polkadot address that contains the provided text filled with a
-* character of choice and the correct checksum to make it a valid address
-* @param {string} input
-* @param {string} fill_c
-* @returns {Address | undefined}
-*/
-export function vanity(input, fill_c) {
-    var ptr0 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len0 = WASM_VECTOR_LEN;
-    var ret = wasm.vanity(ptr0, len0, fill_c.codePointAt(0));
-    return ret === 0 ? undefined : Address.__wrap(ret);
+
+let cachegetInt32Memory0 = null;
+function getInt32Memory0() {
+    if (cachegetInt32Memory0 === null || cachegetInt32Memory0.buffer !== wasm.memory.buffer) {
+        cachegetInt32Memory0 = new Int32Array(wasm.memory.buffer);
+    }
+    return cachegetInt32Memory0;
 }
 
+function getArrayU8FromWasm0(ptr, len) {
+    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
+}
 /**
 */
 export class Address {
@@ -120,19 +106,23 @@ export class Address {
         wasm.__wbg_address_free(ptr);
     }
     /**
-    * @returns {string}
+    * The vanity function generates a Polkadot address that contains the provided text filled
+    * with a character of choice and the correct checksum to make it a valid address
+    * ```
+    * # use keyless_vanity::Address;
+    * let addr = Address::with_vanity("HelloWorld", '1').expect("valid address");
+    * let expected = "1HeLLoWorLd1111111111111111111111111111111112kn";
+    * assert_eq!(addr.to_string(), expected);
+    * ```
+    * @param {string} input
+    * @param {string} fill_c
+    * @returns {Address | undefined}
     */
-    encode() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.address_encode(retptr, this.ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_free(r0, r1);
-        }
+    static withVanity(input, fill_c) {
+        var ptr0 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.address_withVanity(ptr0, len0, fill_c.codePointAt(0));
+        return ret === 0 ? undefined : Address.__wrap(ret);
     }
     /**
     * @returns {Uint8Array}
@@ -148,6 +138,21 @@ export class Address {
             return v0;
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @returns {string}
+    */
+    encode() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_encode(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(r0, r1);
         }
     }
 }
